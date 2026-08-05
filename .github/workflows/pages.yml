@@ -1,27 +1,25 @@
-# Genera GAFOR/METEOMAR e pubblica su GitHub Pages.
+# Genera GAFOR/METEOMAR e pubblica su GitHub Pages (branch gh-pages).
 # Aggiornamento: ogni 6 ore + a mano (Actions → Run workflow) + a ogni push su main.
 
 name: Bollettini → GitHub Pages
 
 on:
   schedule:
-    # ~ogni 6 ore (i bollettini AM escono alle sinottiche)
     - cron: "15 0,6,12,18 * * *"
-  workflow_dispatch: # pulsante "Run workflow" su GitHub
+  workflow_dispatch:
   push:
     branches: [main]
 
+# Serve per scrivere sul branch gh-pages
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,18 +33,11 @@ jobs:
       - name: Genera HTML dai bollettini live
         run: python3 gafor_meteomar.py --html --html-dir _site --quiet
 
-      - name: Upload artifact Pages
-        uses: actions/upload-pages-artifact@v3
+      - name: Pubblica su branch gh-pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: _site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          force_orphan: true
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
