@@ -1,16 +1,23 @@
 # Genera GAFOR/METEOMAR e pubblica su GitHub Pages (branch gh-pages).
-# Aggiornamento: ogni 6 ore + a mano (Actions → Run workflow) + a ogni push su main.
+#
+# Trigger:
+#   - schedule: più finestre al giorno (i cron GitHub possono essere in ritardo
+#     o saltati sotto carico; per questo non ci si affida a un solo orario)
+#   - workflow_dispatch: avvio manuale da Actions
+#   - push su main
 
 name: Bollettini → GitHub Pages
 
 on:
   schedule:
-    - cron: "15 0,6,12,18 * * *"
+    # ~30 min dopo le emissioni tipiche (00/06/12/18 UTC), fuori dal minuto :00
+    - cron: "35 0,6,12,18 * * *"
+    # rete di sicurezza: ogni 3 ore (i job schedule di GitHub a volte saltano)
+    - cron: "20 */3 * * *"
   workflow_dispatch:
   push:
     branches: [main]
 
-# Serve per scrivere sul branch gh-pages
 permissions:
   contents: write
 
