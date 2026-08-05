@@ -10,10 +10,9 @@ name: Bollettini → GitHub Pages
 
 on:
   schedule:
-    # ~30 min dopo le emissioni tipiche (00/06/12/18 UTC), fuori dal minuto :00
-    - cron: "35 0,6,12,18 * * *"
-    # rete di sicurezza: ogni 3 ore (i job schedule di GitHub a volte saltano)
-    - cron: "20 */3 * * *"
+    # Ogni ora (minuto 17): i bollettini AM escono alle 00/06/12/18 UTC ma
+    # GitHub può ritardare i cron di molto; un passaggio orario recupera in fretta.
+    - cron: "17 * * * *"
   workflow_dispatch:
   push:
     branches: [main]

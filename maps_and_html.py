@@ -372,6 +372,15 @@ header {
 header .row { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; align-items: center; justify-content: space-between; }
 header h1 { margin: 0; font-size: 1.25rem; letter-spacing: .02em; }
 header .meta { color: var(--muted); font-size: .9rem; }
+header .meta strong { color: #fde68a; font-weight: 700; }
+.stamp {
+  display: grid; gap: .25rem;
+  background: #0f172a; border: 1px solid var(--border);
+  border-radius: 8px; padding: .65rem .85rem; margin: 0 0 1rem;
+  font-size: .9rem;
+}
+.stamp .k { color: var(--muted); }
+.stamp .v { color: #f8fafc; font-weight: 600; }
 nav { display: flex; gap: .75rem; flex-wrap: wrap; }
 nav a {
   background: var(--panel2);
