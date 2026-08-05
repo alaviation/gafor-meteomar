@@ -506,6 +506,7 @@ def _page_shell(
     body: str,
     generated: str,
     source_date: str = "",
+    bulletin_label: str = "",
     refresh_seconds: int = 0,
 ) -> str:
     meta_refresh = ""
@@ -517,12 +518,15 @@ def _page_shell(
       <a href="meteomar.html" class="{'active' if active == 'meteomar' else ''}">METEOMAR</a>
       <a href="index.html">Indice</a>
     </nav>"""
+    bull = bulletin_label or source_date or "—"
     return f"""<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{_esc(title)} – bollettino Aeronautica Militare">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
   {meta_refresh}
   <title>{_esc(title)}</title>
   <style>{CSS}</style>
@@ -533,22 +537,26 @@ def _page_shell(
       <div>
         <h1>{_esc(title)}</h1>
         <div class="meta">
-          Generato: {_esc(generated)}
-          {f'· Fonte bollettino: {_esc(source_date)}' if source_date else ''}
-          · dati live da meteoam.it
+          Pagina generata: <strong>{_esc(generated)}</strong>
+          · Bollettino: <strong>{_esc(bull)}</strong>
         </div>
       </div>
       {nav}
     </div>
   </header>
   <main>
+    <div class="stamp">
+      <div><span class="k">Pagina rigenerata (GitHub Actions):</span> <span class="v">{_esc(generated)}</span></div>
+      <div><span class="k">Bollettino ufficiale usato:</span> <span class="v">{_esc(bull)}</span></div>
+      <div><span class="k">Pubblicazione API meteoam:</span> <span class="v">{_esc(source_date or '—')}</span></div>
+    </div>
     {body}
   </main>
   <footer>
     Fonte: Servizio Meteorologico Aeronautica Militare (meteoam.it).
     Uso informativo — verificare sempre i bollettini ufficiali prima di volo o navigazione.
-    Pagine statiche regenerate dallo script <code>gafor_meteomar.py --html</code>
-    (o sempre fresche con <code>--serve</code>).
+    Se «Pagina rigenerata» è vecchia, il cron GitHub non ha ancora girato;
+    se è recente ma il bollettino è di stamattina, l’AM non ha ancora pubblicato il successivo.
   </footer>
 </body>
 </html>
@@ -687,12 +695,18 @@ def render_gafor_html(
       <pre class="raw">{_esc(b.raw.strip())}</pre>
     </div>
     """
+    validity = format_validity(b.validity) if b.validity else ""
+    bull = f"GAFOR validità {validity}" if validity else (b.header or "GAFOR")
+    if b.issued:
+        bull += f" · testata {b.issued}"
+
     return _page_shell(
         "GAFOR · Italia",
         "gafor",
         body,
         generated,
         source_date=b.source_date or "",
+        bulletin_label=bull,
         refresh_seconds=refresh_seconds,
     )
 
@@ -823,12 +837,17 @@ def render_meteomar_html(
       <pre class="raw">{_esc(b.raw.strip())}</pre>
     </div>
     """
+    bull = b.header or "METEOMAR"
+    if b.issued_line:
+        bull = f"{b.header} · {b.issued_line}"
+
     return _page_shell(
         "METEOMAR · Mari Italia",
         "meteomar",
         body,
         generated,
         source_date=b.source_date or "",
+        bulletin_label=bull,
         refresh_seconds=refresh_seconds,
     )
 
